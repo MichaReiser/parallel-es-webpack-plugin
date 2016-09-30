@@ -1,0 +1,28 @@
+{
+  "name": "parallel-es-webpack-plugin",
+  "version": "1.0.0",
+  "description": "Webpack Plugin for Parallel.ES",
+  "main": "./dist/parallel-es-webpack-plugin/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tslint index.ts './src/**/*.ts' && tsc",
+    "start": "tsc --watch"
+  },
+  "author": "Micha Reiser <micha@famreiser.ch>",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/babel-core": "^6.7.14",
+    "@types/babel-generator": "^6.7.14",
+    "@types/node": "^6.0.41",
+    "tslint": "^3.15.1",
+    "typescript": "^2.0.3",
+    "webpack": "^2.1.0-beta.22"
+  },
+  "peerDependencies": {
+    "webpack": "^2.1.0-beta.22"
+  },
+  "dependencies": {
+    "babel-core": "^6.16.0",
+    "babel-loader": "^6.2.5"
+  }
+}
