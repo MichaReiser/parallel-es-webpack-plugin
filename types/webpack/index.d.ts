@@ -5,8 +5,22 @@ declare module "webpack" {
         apply(...toApply: { apply: (tapable: Tapable) => void }[]): void;
     }
 
+    export interface FileSystem {
+        exists(path: string, callback: (error: any, exists: boolean) => void);
+        existsSync(path: string): boolean;
+        readFile(path: string, callback?: (error: any, content: string) => void): void;
+        readFile(path: string, encoding?: string, callback?: (error: any, content: string) => void): void;
+        readFileSync(path: string, encoding?: string): string;
+    }
+
+    export class LoaderOptionsPlugin {
+        constructor(options: { debug?: boolean });
+    }
+
     export interface Compiler extends Tapable {
         context: string;
+        inputFileSystem: FileSystem;
+        outputFileSystem: FileSystem;
 
         /**
          * A Compilation is created. A plugin can use this to obtain a reference to the Compilation object. The params object contains useful references.
@@ -39,8 +53,16 @@ declare module "webpack" {
         runAsChild(callback: (error: any, entries: any[], compilation: Compilation) => void): void;
     }
 
+    interface Asset {
+        emitted: boolean;
+        existsAt: string;
+        map(): RawSourceMap;
+    }
+
     export interface Compilation extends Tapable {
         compiler: Compiler;
+        errors: Error[];
+        assets: { [name: string]: Asset };
         addEntry(context: any, entry: any, name: string, callback: Function): void;
         createChildCompiler(name: string, outputOptions: WebpackOptions): Compiler;
     }
@@ -60,12 +82,17 @@ declare module "webpack" {
         resourcePath: string;
         async(): (error: any, code?: string, map?: RawSourceMap) => void;
     }
+
+    export interface Stats {
+        compilation: Compilation;
+    }
 }
 
 declare module "webpack/lib/SingleEntryPlugin" {
     import {Tapable} from "webpack";
-    export default class SingleEntryPlugin implements Tapable {
+
+    export = class SingleEntryPlugin implements Tapable {
         constructor(context: string, request: string, entryName: string);
         public apply(...toApply: {apply: ((tapable: Tapable) => void)}[]): void;
-    }
+    };
 }

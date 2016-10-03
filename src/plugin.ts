@@ -1,24 +1,28 @@
 import {Compiler} from "webpack";
-import SingleEntryPlugin from "webpack/lib/SingleEntryPlugin";
+import SingleEntryPlugin = require("webpack/lib/SingleEntryPlugin");
 
 class ParallelESPlugin {
     public apply(compiler: Compiler) {
-
         compiler.plugin("compilation", compilation => {
             if (compilation.compiler.isChild()) {
                 return;
             }
 
             const childCompiler = compilation.createChildCompiler("parallel-es-worker", {});
+            const query = {
+                babelrc: false,
+                plugins: [
+                    require.resolve("babel-plugin-parallel-es/dist/src/worker-rewriter/worker-rewriter-plugin")
+                ]
+            };
 
-            // fix module name
-            // FIx should be non entry...
-            childCompiler.apply(new SingleEntryPlugin(compiler.context, `${require.resolve("./worker-functions-registrator-loader")}!parallel-es/dist/worker-slave.parallel.js`, "worker-slave.parallel"));
+            const loader = require.resolve("babel-loader");
+            const request = `${loader}?${JSON.stringify(query)}!parallel-es/dist/worker-slave.parallel.js`;
+            childCompiler.apply(new SingleEntryPlugin(compiler.context, request, "worker-slave.parallel"));
 
             childCompiler.runAsChild(error => {
                 if (error) {
-                    console.error("Error", error);
-                    // what to do here?
+                    compilation.errors.push(error);
                 }
             });
         });
