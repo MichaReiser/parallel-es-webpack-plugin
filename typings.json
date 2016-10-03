@@ -1,0 +1,14 @@
+{
+  "globalDependencies": {
+    "babel-core": "registry:dt/babel-core#6.7.0+20160423062108",
+    "babel-generator": "registry:dt/babel-generator#6.7.0+20160423062108",
+    "babel-template": "registry:dt/babel-template#6.7.0+20160423062108",
+    "babel-traverse": "registry:dt/babel-traverse#6.7.0+20160423062108",
+    "babel-types": "registry:dt/babel-types#6.7.0+20160423062108",
+    "babylon": "registry:dt/babylon#6.7.0+20160423062108",
+    "node": "registry:env/node#6.0.0+20160918225031",
+    "source-map": "registry:dt/source-map#0.0.0+20160317120654",
+    "uglify-js": "registry:dt/uglify-js#2.6.1+20160316155526",
+    "webpack": "registry:dt/webpack#1.12.9+20160927034556"
+  }
+}

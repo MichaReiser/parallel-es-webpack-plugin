@@ -15,12 +15,13 @@
   },
   "files": [
     "index.ts",
-    "./types/webpack/index"
+    "typings/index.d.ts"
   ],
   "include": [
-    "src/**/*.ts"
+    "./src/**/*.ts"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "node_modules/**/@types"
   ]
 }
