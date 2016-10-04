@@ -48,8 +48,8 @@
     "webpack": "^2.1.0-beta.25"
   },
   "peerDependencies": {
-    "babel-plugin-parallel-es": "0.0.3",
-    "parallel-es": "0.0.4",
+    "babel-plugin-parallel-es": "0.0.4",
+    "parallel-es": "0.0.3",
     "webpack": "^2.1.0-beta.25"
   },
   "dependencies": {
