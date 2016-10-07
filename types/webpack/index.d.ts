@@ -6,7 +6,7 @@ declare module "webpack" {
     }
 
     export interface FileSystem {
-        exists(path: string, callback: (error: any, exists: boolean) => void);
+        exists(path: string, callback: (error: any, exists: boolean) => void): void;
         existsSync(path: string): boolean;
         readFile(path: string, callback?: (error: any, content: string) => void): void;
         readFile(path: string, encoding?: string, callback?: (error: any, content: string) => void): void;
@@ -57,6 +57,7 @@ declare module "webpack" {
         emitted: boolean;
         existsAt: string;
         map(): RawSourceMap;
+        source(): string;
     }
 
     export interface Compilation extends Tapable {
