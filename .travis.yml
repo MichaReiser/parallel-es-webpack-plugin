@@ -3,3 +3,11 @@ node_js:
 - stable
 after_success:
 - npm run coveralljs
+deploy:
+  provider: npm
+  email: micha@famreiser.ch
+  api_key:
+    secure: CtHCXo67WhitieCIJuHUdogjELtI8gpgwtVGILUb9i9THgbKtFXuPdbWG4CuL2TotjiwNQyE2WfIY44KdIjoP2OrvvtHtTvpcQ0i59/kx22HdQM98Cmz6UdMaWDTNzMN4qW7123WCM+rNNq/Pl/H9DZpro+iyu/YtzzkyhCiSwS0xEt6axec/4BhOk77eFEB4HLMr4AOnrINzIJPOgw58rEDeV3qNvW5yhR2NIMdedgHLe2JH7v+OKRnhl1AgGvbv6+kzZkdW2wh8LXyo4R+I8F6jLLIKu4hOU4XHsgcLIPAWcMIgnA6QT9I3spnmOsll0Xwjb9lGblwqu+5QJ+FicfrsIyItJcZZz9MV0P4xSwxDWr6u6OPRfaNCxFbbzhh5veKd5LYORcT49rkroOow+FNsF+FxtV8BfNgJuQR97dvvIgpUfedNzLdt3vAYHMjPvmrU7ve618K1L4HF1fTXiZiuKuHYGmzKvPtIY9fQIWJmck4V4P3DQiR/ZzUzQEmvURJmRVxKbQF8Vc7CEnfOmTMBTaX0kuHPnPplVFwQKCTp0UATwVdy+PyJ8Y8waTyXA3h56dzQ2aU5mHByx9WH+t51DeSbyAUEvI3D+3C1t9Vt88U8Jnv2RoFSRLc2gEZZoDY3CigucUR7vQtiFI7pfBe29/BeYWt835zJWRfM0Q=
+  on:
+    tags: true
+    repo: DatenMetzgerX/parallel-es-webpack-plugin
