@@ -38,7 +38,7 @@ describe("Plugin", function (this: ITestDefinition) {
     it("replaces the functors passed to parallel with serialized function ids", function () {
         return rewriteTest("simple-parallel-call-test.js").then(compilation => {
             const content =  readAsset("main", compilation);
-            expect(content).to.have.match(/\.from\(\[1, 2, 3\]\)\.map\(\{\s*identifier: "static-\/.*\/test\/cases\/simple-parallel-call-test\.js#program\.body\[1\]\.expression\.callee\.object\.arguments\[0\]",\s*_______isFunctionId: true\s*\}\)/);
+            expect(content).to.have.match(/\.from\(\[1, 2, 3\]\)\.map\(\{\s*identifier: 'static-\/.*\/test\/cases\/simple-parallel-call-test\.js#program\.body\[1\]\.expression\.callee\.object\.arguments\[0\]',\s*_______isFunctionId: true\s*\}\)/);
         });
     });
 
@@ -111,6 +111,9 @@ function webpackOptions(options: Object) {
                 {
                     loader: "babel-loader",
                     query: {
+                        generatorOpts: {
+                            quotes: "single"
+                        },
                         plugins: [
                             [require.resolve("babel-plugin-parallel-es")]
                         ],
@@ -129,7 +132,7 @@ function webpackOptions(options: Object) {
         },
 
         plugins: [
-            new ParallelESPlugin(),
+            new ParallelESPlugin({ babelOptions: { generatorOpts: { quotes: "single" } } }),
             new webpack.LoaderOptionsPlugin({ debug: true })
         ]
     }, options);
