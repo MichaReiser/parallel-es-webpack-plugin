@@ -45,7 +45,7 @@ describe("Plugin", function (this: ITestDefinition) {
     it("registers the functors from the 'main-thread' in the parallel worker file", function () {
         return rewriteTest("simple-parallel-call-test.js").then(compilation => {
             const content = readAsset("worker-slave.parallel", compilation);
-            expect(content).to.have.match(/@preserve WORKER_SLAVE_STATIC_FUNCTIONS_PLACEHOLDER \*\/\s*slaveFunctionLookupTable\.registerStaticFunction\(\{\s*identifier: 'static-\/.*\/test\/cases\/simple-parallel-call-test\.js#program\.body\[1\]\.expression\.callee\.object\.arguments\[0\]',\s*_______isFunctionId: true\s*\}, value => value \* 2\);/);
+            expect(content).to.have.match(/slaveFunctionLookupTable\.registerStaticFunction\(\{\s*identifier: 'static-\/.*\/test\/cases\/simple-parallel-call-test\.js#program\.body\[1\]\.expression\.callee\.object\.arguments\[0\]',\s*_______isFunctionId: true\s*\}, value => value \* 2\);/);
         });
     });
 

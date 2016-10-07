@@ -46,7 +46,7 @@ declare module "webpack" {
         /**
          * Plugins can use this point to add entries to the compilation or prefetch modules. They can do this by calling addEntry(context, entry, name, callback) or prefetch(context, dependency, callback) on the Compilatio
          */
-        plugin(name: "make", callback: (c: Compilation) => void): void;
+        plugin(name: "make", callback: (c: Compilation, callback: (error: any) => void) => void): void;
 
         isChild(): boolean;
 

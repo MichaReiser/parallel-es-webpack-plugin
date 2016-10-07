@@ -17,23 +17,20 @@ class ParallelESPlugin {
     }
 
     public apply(compiler: Compiler) {
-        compiler.plugin("compilation", compilation => {
+        compiler.plugin("make", (compilation, callback) => {
             if (compilation.compiler.isChild()) {
                 return;
             }
 
             const childCompiler = compilation.createChildCompiler("parallel-es-worker", {});
+            childCompiler.context = compiler.context;
             const query = this.options.babelOptions;
 
             const loader = require.resolve("babel-loader");
             const request = `${loader}?${JSON.stringify(query)}!${this.options.workerSlaveFileName}`;
-            childCompiler.apply(new SingleEntryPlugin(compiler.context, request, "worker-slave.parallel"));
+            childCompiler.apply(new SingleEntryPlugin(childCompiler.context, request, "worker-slave.parallel"));
 
-            childCompiler.runAsChild(error => {
-                if (error) {
-                    compilation.errors.push(error);
-                }
-            });
+            childCompiler.runAsChild(callback);
         });
     }
 }
