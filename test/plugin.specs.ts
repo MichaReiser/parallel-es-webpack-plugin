@@ -17,20 +17,12 @@ function readSourceMap(name: string, compilation: Compilation): RawSourceMap {
     return compilation.assets[name].map();
 }
 
-function readAsset(name: string, compilation: Compilation): Promise<string> {
-    return new Promise<string>((resolve, reject) => {
-        if (!compilation.assets.hasOwnProperty(name)) {
-            reject(`The compilation contains no asset with the name '${name}'.`);
-        }
+function readAsset(name: string, compilation: Compilation): string {
+    if (!compilation.assets.hasOwnProperty(name)) {
+        throw new Error(`The compilation contains no asset with the name '${name}'.`);
+    }
 
-        compilation.compiler.outputFileSystem.readFile(compilation.assets[name].existsAt, "utf-8", (error, code) => {
-            if (error) {
-                reject(error);
-            } else {
-                resolve(code);
-            }
-        });
-    });
+    return compilation.assets[name].source();
 }
 
 describe("Plugin", function (this: ITestDefinition) {
@@ -45,17 +37,15 @@ describe("Plugin", function (this: ITestDefinition) {
 
     it("replaces the functors passed to parallel with serialized function ids", function () {
         return rewriteTest("simple-parallel-call-test.js").then(compilation => {
-            return readAsset("main", compilation);
-        }).then(content => {
-            expect(content).to.have.match(/\.from\(\[1, 2, 3\]\)\.map\(\{\s*identifier: "static-\/.*\/test\/cases\/simple-parallel-call-test\.js#program\.body\[1\]\.expression\.callee\.object\.arguments\[0\]",\s*_______isFunctionId: true\s*\}\)/);
+            const content =  readAsset("main", compilation);
+            expect(content).to.have.match(/\.from\(\[1, 2, 3\]\)\.map\(\{\s*identifier: 'static-\/.*\/test\/cases\/simple-parallel-call-test\.js#program\.body\[1\]\.expression\.callee\.object\.arguments\[0\]',\s*_______isFunctionId: true\s*\}\)/);
         });
     });
 
     it("registers the functors from the 'main-thread' in the parallel worker file", function () {
         return rewriteTest("simple-parallel-call-test.js").then(compilation => {
-            return readAsset("worker-slave.parallel", compilation);
-        }).then(content => {
-            expect(content).to.have.match(/@preserve WORKER_SLAVE_STATIC_FUNCTIONS_PLACEHOLDER \*\/\s*slaveFunctionLookupTable\.registerStaticFunction\(\{\s*identifier: "static-\/.*\/test\/cases\/simple-parallel-call-test\.js#program\.body\[1\]\.expression\.callee\.object\.arguments\[0\]",\s*_______isFunctionId: true\s*\}, value => value \* 2\);/);
+            const content = readAsset("worker-slave.parallel", compilation);
+            expect(content).to.have.match(/slaveFunctionLookupTable\.registerStaticFunction\(\{\s*identifier: 'static-\/.*\/test\/cases\/simple-parallel-call-test\.js#program\.body\[1\]\.expression\.callee\.object\.arguments\[0\]',\s*_______isFunctionId: true\s*\}, value => value \* 2\);/);
         });
     });
 
@@ -71,9 +61,7 @@ describe("Plugin", function (this: ITestDefinition) {
     it("maps the inserted function correctly to it's original position", function () {
         return rewriteTest("simple-parallel-call-test.js").then(compilation => {
             const map = readSourceMap("worker-slave.parallel", compilation);
-
-            return readAsset("worker-slave.parallel", compilation).then((content) => ({ code: content, map }));
-        }).then(({code, map}) => {
+            const code = readAsset("worker-slave.parallel", compilation);
             const codeLines = code.split("\n");
 
             for (let line = 0; line < codeLines.length; ++line) {
@@ -123,6 +111,9 @@ function webpackOptions(options: Object) {
                 {
                     loader: "babel-loader",
                     query: {
+                        generatorOpts: {
+                            quotes: "single"
+                        },
                         plugins: [
                             [require.resolve("babel-plugin-parallel-es")]
                         ],
@@ -141,7 +132,7 @@ function webpackOptions(options: Object) {
         },
 
         plugins: [
-            new ParallelESPlugin(),
+            new ParallelESPlugin({ babelOptions: { generatorOpts: { quotes: "single" } } }),
             new webpack.LoaderOptionsPlugin({ debug: true })
         ]
     }, options);

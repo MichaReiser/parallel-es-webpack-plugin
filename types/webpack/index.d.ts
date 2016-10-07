@@ -6,7 +6,7 @@ declare module "webpack" {
     }
 
     export interface FileSystem {
-        exists(path: string, callback: (error: any, exists: boolean) => void);
+        exists(path: string, callback: (error: any, exists: boolean) => void): void;
         existsSync(path: string): boolean;
         readFile(path: string, callback?: (error: any, content: string) => void): void;
         readFile(path: string, encoding?: string, callback?: (error: any, content: string) => void): void;
@@ -46,7 +46,7 @@ declare module "webpack" {
         /**
          * Plugins can use this point to add entries to the compilation or prefetch modules. They can do this by calling addEntry(context, entry, name, callback) or prefetch(context, dependency, callback) on the Compilatio
          */
-        plugin(name: "make", callback: (c: Compilation) => void): void;
+        plugin(name: "make", callback: (c: Compilation, callback: (error: any) => void) => void): void;
 
         isChild(): boolean;
 
@@ -57,6 +57,7 @@ declare module "webpack" {
         emitted: boolean;
         existsAt: string;
         map(): RawSourceMap;
+        source(): string;
     }
 
     export interface Compilation extends Tapable {
