@@ -38,14 +38,29 @@ describe("Plugin", function (this: ITestDefinition) {
     it("replaces the functors passed to parallel with serialized function ids", function () {
         return rewriteTest("simple-parallel-call-test.js").then(compilation => {
             const content =  readAsset("main", compilation);
-            expect(content).to.have.match(/\.from\(\[1, 2, 3\]\)\.map\(\{\s*identifier: 'static-\/.*\/test\/cases\/simple-parallel-call-test\.js#program\.body\[1\]\.expression\.callee\.object\.arguments\[0\]',\s*_______isFunctionId: true\s*\}\)/);
+            expect(content).to.include(`__WEBPACK_IMPORTED_MODULE_0_parallel_es___default.a.from([1, 2, 3]).map({
+  identifier: 'static:./test.js/_anonymous',
+  _______isFunctionId: true
+}).then(function (result) {
+  return console.log(result);
+});`);
         });
     });
 
     it("registers the functors from the 'main-thread' in the parallel worker file", function () {
         return rewriteTest("simple-parallel-call-test.js").then(compilation => {
             const content = readAsset("worker-slave.parallel", compilation);
-            expect(content).to.have.match(/slaveFunctionLookupTable\.registerStaticFunction\(\{\s*identifier: 'static-\/.*\/test\/cases\/simple-parallel-call-test\.js#program\.body\[1\]\.expression\.callee\.object\.arguments\[0\]',\s*_______isFunctionId: true\s*\}, value => value \* 2\);/);
+            expect(content).to.include(`/*./test.js*/(function () {
+        function _anonymous(value) {
+            return value * 2;
+        }
+
+        slaveFunctionLookupTable.registerStaticFunction({
+            identifier: 'static:./test.js/_anonymous',
+            _______isFunctionId: true
+        }, _anonymous);
+    })();`);
+
         });
     });
 
@@ -65,10 +80,10 @@ describe("Plugin", function (this: ITestDefinition) {
             const codeLines = code.split("\n");
 
             for (let line = 0; line < codeLines.length; ++line) {
-                const column = codeLines[line].indexOf("value => value * 2");
+                const column = codeLines[line].indexOf("function _anonymous(value)");
                 if (column !== -1) {
                     const consumer = new SourceMapConsumer(map);
-                    expect(consumer.originalPositionFor({line: line + 1, column})).to.include({
+                    expect(consumer.originalPositionFor({column: column + 20, line: line + 1})).to.include({
                         column: 29,
                         line: 3,
                         name: "value"
@@ -77,7 +92,7 @@ describe("Plugin", function (this: ITestDefinition) {
                 }
             }
 
-            expect.fail("Function value => value * 2 not found in generated code");
+            expect.fail(false, true, `Function function _anonymous(value) not found in generated code\n${code}`);
         });
     });
 });
@@ -109,8 +124,10 @@ function webpackOptions(options: Object) {
         module: {
             loaders: [
                 {
+                    exclude: /(node_modules|bower_components|worker-slave.parallel-es6\.js)/,
                     loader: "babel-loader",
                     query: {
+                        filenameRelative: "./test.js",
                         generatorOpts: {
                             quotes: "single"
                         },
