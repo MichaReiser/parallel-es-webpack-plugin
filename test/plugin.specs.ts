@@ -1,6 +1,5 @@
 import {expect} from "chai";
 import path = require("path");
-import fs = require("fs");
 import ParallelESPlugin from "../src/plugin";
 
 import {merge} from "lodash";
@@ -14,7 +13,7 @@ function readSourceMap(name: string, compilation: Compilation): RawSourceMap {
         throw new Error(`The compilation contains no asset with the name '${name}'.`);
     }
 
-    return compilation.assets[name].map();
+    return JSON.parse(compilation.assets[name].source()) as RawSourceMap;
 }
 
 function readAsset(name: string, compilation: Compilation): string {
@@ -31,7 +30,7 @@ describe("Plugin", function (this: ITestDefinition) {
     it("creates one asset for the main entry and one containing the worker slave code", function () {
         return rewriteTest("simple-parallel-call-test.js").then((compilation) => {
             expect(compilation.assets).to.have.property("main");
-            expect(compilation.assets).to.have.property("worker-slave.parallel");
+            expect(compilation.assets).to.have.property("worker-slave.parallel.js");
         });
     });
 
@@ -49,7 +48,7 @@ describe("Plugin", function (this: ITestDefinition) {
 
     it("registers the functors from the 'main-thread' in the parallel worker file", function () {
         return rewriteTest("simple-parallel-call-test.js").then(compilation => {
-            const content = readAsset("worker-slave.parallel", compilation);
+            const content = readAsset("worker-slave.parallel.js", compilation);
             expect(content).to.include(`/*./test.js*/(function () {
         function _anonymous(value) {
             return value * 2;
@@ -66,17 +65,25 @@ describe("Plugin", function (this: ITestDefinition) {
 
     it("sets the source content for the file where functions have been extracted in the output source map", function () {
         return rewriteTest("simple-parallel-call-test.js").then(compilation => {
-            const map = readSourceMap("worker-slave.parallel", compilation);
+            /* tslint:disable: no-consecutive-blank-lines */
+            const map = readSourceMap("worker-slave.parallel.js.map", compilation);
 
             const consumer = new SourceMapConsumer(map);
-            expect(consumer.sourceContentFor(path.resolve("./test/cases/simple-parallel-call-test.js"))).to.equal(fs.readFileSync("./test/cases/simple-parallel-call-test.js", "utf-8"));
+            expect(consumer.sourceContentFor("webpack:///test/cases/simple-parallel-call-test.js")).to.equal(`import parallel from "parallel-es";
+
+parallel.from([1, 2, 3]).map(value => value * 2).then(result => console.log(result));
+
+
+
+// WEBPACK FOOTER //
+// ./test/cases/simple-parallel-call-test.js`);
         });
     });
 
     it("maps the inserted function correctly to it's original position", function () {
         return rewriteTest("simple-parallel-call-test.js").then(compilation => {
-            const map = readSourceMap("worker-slave.parallel", compilation);
-            const code = readAsset("worker-slave.parallel", compilation);
+            const map = readSourceMap("worker-slave.parallel.js.map", compilation);
+            const code = readAsset("worker-slave.parallel.js", compilation);
             const codeLines = code.split("\n");
 
             for (let line = 0; line < codeLines.length; ++line) {

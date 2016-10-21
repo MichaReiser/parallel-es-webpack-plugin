@@ -48,6 +48,11 @@ declare module "webpack" {
          */
         plugin(name: "make", callback: (c: Compilation, callback: (error: any) => void) => void): void;
 
+        plugin(name: "after-compile", callback: (this: void, c: Compilation, callback: (error: any) => void) => void): void;
+        
+        plugin(name: "emit", callback: (c: Compilation, callback: (error: any) => void) => void): void;
+        plugin(name: "done", callback: (this: void) => void): void;
+
         isChild(): boolean;
 
         runAsChild(callback: (error: any, entries: any[], compilation: Compilation) => void): void;
@@ -61,11 +66,25 @@ declare module "webpack" {
     }
 
     export interface Compilation extends Tapable {
+        cache: {[name: string]: {}};
         compiler: Compiler;
         errors: Error[];
         assets: { [name: string]: Asset };
+        modules: Module[];
+        
         addEntry(context: any, entry: any, name: string, callback: Function): void;
         createChildCompiler(name: string, outputOptions: WebpackOptions): Compiler;
+
+        plugin(event: "succeed-module", callback: (this: void, module: Module) => void): void;
+        plugin(event: "failed-module", callback: (this: void, module: Module) => void): void;
+        plugin(evnet: "need-additional-pass", callback: (this: void) => boolean): void;
+    }
+
+    export interface Module {
+        fileDependencies: string[];
+        resource: string;
+        rawRequest: string;
+        request: string;
     }
 
     export interface NormalModuleFactory {
@@ -94,6 +113,15 @@ declare module "webpack/lib/SingleEntryPlugin" {
 
     export = class SingleEntryPlugin implements Tapable {
         constructor(context: string, request: string, entryName: string);
+        public apply(...toApply: {apply: ((tapable: Tapable) => void)}[]): void;
+    };
+}
+
+declare module "webpack/lib/webworker/WebWorkerTemplatePlugin" {
+    import {Tapable} from "webpack";
+
+    export = class WebWorkerTemplatePlugin implements Tapable {
+        constructor(outputOptions: any);
         public apply(...toApply: {apply: ((tapable: Tapable) => void)}[]): void;
     };
 }
