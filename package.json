@@ -1,6 +1,6 @@
 {
   "name": "parallel-es-webpack-plugin",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Webpack Plugin for Parallel.ES",
   "main": "./dist/index.js",
   "repository": "https://github.com/DatenMetzgerX/parallel-es-webpack-plugin",
