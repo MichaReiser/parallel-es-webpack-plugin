@@ -33,7 +33,7 @@ module.exports = {
                 test: /\.js$/,         // <—— Add Babel-Loader
                 loader: "babel-loader",
                 query: {
-	                "plugins": ["parallel-es"]   <— Add Babel Plugin
+	                "plugins": ["parallel-es"]   // <— Add Babel Plugin
                 }
             }
         ]
