@@ -9,6 +9,7 @@
     ],
     "trailing-comma": [true, { "multiline": "never", "singleline": "never" }],
     "ordered-imports": false,
-    "no-string-literal": false
+    "no-string-literal": false,
+    "arrow-parens": false
   }
 }
