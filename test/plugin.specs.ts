@@ -36,20 +36,23 @@ describe("Plugin", function(this: ITestDefinition) {
 
     it("replaces the functors passed to parallel with serialized function ids", function() {
         return rewriteTest("simple-parallel-call-test.js").then(compilation => {
-            const content =  readAsset("main", compilation);
-            expect(content).to.include(`__WEBPACK_IMPORTED_MODULE_0_parallel_es___default.a.from([1, 2, 3]).map({
+            const content = readAsset("main", compilation);
+            expect(content).to.have.string(
+`parallel_es__WEBPACK_IMPORTED_MODULE_0___default.a.from([1, 2, 3]).map({
   identifier: 'static:./test.js/_anonymous',
   _______isFunctionId: true
 }).then(function (result) {
   return console.log(result);
-});`);
+});
+
+/***/ })`);
         });
     });
 
     it("registers the functors from the 'main-thread' in the parallel worker file", function() {
         return rewriteTest("simple-parallel-call-test.js").then(compilation => {
             const content = readAsset("worker-slave.parallel.js", compilation);
-            expect(content).to.include(`/*./test.js*/(function () {
+            expect(content).to.have.string(`/*./test.js*/(function () {
         function _anonymous(value) {
             return value * 2;
         }
@@ -72,11 +75,7 @@ describe("Plugin", function(this: ITestDefinition) {
             expect(consumer.sourceContentFor("webpack:///test/cases/simple-parallel-call-test.js")).to.equal(`import parallel from "parallel-es";
 
 parallel.from([1, 2, 3]).map(value => value * 2).then(result => console.log(result));
-
-
-
-// WEBPACK FOOTER //
-// ./test/cases/simple-parallel-call-test.js`);
+`);
         });
     });
 
@@ -128,12 +127,13 @@ function webpackOptions(options: object) {
     "use strict";
     return merge({
         devtool: "#source-map",
+        mode: "development",
         module: {
-            loaders: [
+            rules: [
                 {
                     exclude: /(node_modules|bower_components|worker-slave.parallel-es6\.js)/,
                     loader: "babel-loader",
-                    query: {
+                    options: {
                         filenameRelative: "./test.js",
                         generatorOpts: {
                             quotes: "single"

@@ -1,5 +1,4 @@
 import {Compiler, Compilation, Module} from "webpack";
-import {uniq} from "lodash";
 import SingleEntryPlugin = require("webpack/lib/SingleEntryPlugin");
 import WebWorkerTemplatePlugin = require("webpack/lib/webworker/WebWorkerTemplatePlugin");
 import {SHARED_MODULES_USING_PARALLEL_REGISTRY} from "babel-plugin-parallel-es/dist/src/modules-using-parallel-registry";
@@ -129,7 +128,7 @@ class ParallelESPlugin {
             const workerModule = this.childCompilation.modules.find(module => module.rawRequest === parallelWorkerRequest);
 
             if (workerModule) {
-                workerModule.fileDependencies = uniq(workerModule.fileDependencies.concat(Array.from(this.workerDependencies.values())));
+                workerModule.buildInfo.fileDependencies = new Set(Array.from(workerModule.buildInfo.fileDependencies).concat(Array.from(this.workerDependencies.values())));
             } else {
                 callback(new Error(`The worker module could not be found in the child compilation`));
                 return;
