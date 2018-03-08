@@ -1,15 +1,20 @@
+// tslint:disable:interface-name no-empty-interface max-classes-per-file
 declare module "webpack" {
     import {RawSourceMap} from "source-map";
 
     export interface Tapable {
-        apply(...toApply: { apply: (tapable: Tapable) => void }[]): void;
+        apply(...toApply: Array<{ apply: (tapable: Tapable) => void }>): void;
     }
 
     export interface FileSystem {
         exists(path: string, callback: (error: any, exists: boolean) => void): void;
+
         existsSync(path: string): boolean;
+
         readFile(path: string, callback?: (error: any, content: string) => void): void;
+
         readFile(path: string, encoding?: string, callback?: (error: any, content: string) => void): void;
+
         readFileSync(path: string, encoding?: string): string;
     }
 
@@ -26,6 +31,7 @@ declare module "webpack" {
          * A Compilation is created. A plugin can use this to obtain a reference to the Compilation object. The params object contains useful references.
          */
         plugin(name: "compilation", callback: (c: Compilation, params: any) => void): void;
+
         plugin(name: "compile", callback: (params: any) => void): void;
 
         /**
@@ -49,8 +55,9 @@ declare module "webpack" {
         plugin(name: "make", callback: (c: Compilation, callback: (error: any) => void) => void): void;
 
         plugin(name: "after-compile", callback: (this: void, c: Compilation, callback: (error: any) => void) => void): void;
-        
+
         plugin(name: "emit", callback: (c: Compilation, callback: (error: any) => void) => void): void;
+
         plugin(name: "done", callback: (this: void) => void): void;
 
         isChild(): boolean;
@@ -61,22 +68,27 @@ declare module "webpack" {
     interface Asset {
         emitted: boolean;
         existsAt: string;
+
         map(): RawSourceMap;
+
         source(): string;
     }
 
     export interface Compilation extends Tapable {
-        cache: {[name: string]: {}};
+        cache: { [name: string]: {} };
         compiler: Compiler;
         errors: Error[];
         assets: { [name: string]: Asset };
         modules: Module[];
-        
+
         addEntry(context: any, entry: any, name: string, callback: Function): void;
+
         createChildCompiler(name: string, outputOptions: WebpackOptions): Compiler;
 
         plugin(event: "succeed-module", callback: (this: void, module: Module) => void): void;
+
         plugin(event: "failed-module", callback: (this: void, module: Module) => void): void;
+
         plugin(evnet: "need-additional-pass", callback: (this: void) => boolean): void;
     }
 
@@ -96,10 +108,12 @@ declare module "webpack" {
     export interface WebpackOptions {
         debug?: boolean;
         devtool?: string;
+        filename?: string;
     }
 
     export interface Loader {
         resourcePath: string;
+
         async(): (error: any, code?: string, map?: RawSourceMap) => void;
     }
 
@@ -111,17 +125,23 @@ declare module "webpack" {
 declare module "webpack/lib/SingleEntryPlugin" {
     import {Tapable} from "webpack";
 
-    export = class SingleEntryPlugin implements Tapable {
+    class SingleEntryPlugin implements Tapable {
         constructor(context: string, request: string, entryName: string);
-        public apply(...toApply: {apply: ((tapable: Tapable) => void)}[]): void;
-    };
+
+        public apply(...toApply: { apply: ((tapable: Tapable) => void) }[]): void;
+    }
+
+    export = SingleEntryPlugin;
 }
 
 declare module "webpack/lib/webworker/WebWorkerTemplatePlugin" {
     import {Tapable} from "webpack";
 
-    export = class WebWorkerTemplatePlugin implements Tapable {
+    class WebWorkerTemplatePlugin implements Tapable {
         constructor(outputOptions: any);
-        public apply(...toApply: {apply: ((tapable: Tapable) => void)}[]): void;
-    };
+
+        public apply(...toApply: Array<{ apply: ((tapable: Tapable) => void) }>): void;
+    }
+
+    export = WebWorkerTemplatePlugin;
 }

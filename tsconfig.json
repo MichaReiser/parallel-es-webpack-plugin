@@ -11,17 +11,19 @@
     "outDir": "dist",
     "target": "es5",
     "sourceMap": true,
-    "lib": ["es6"]
+    "lib": ["es6"],
+    "typeRoots": [
+      "./types",
+      "node_modules/@types"
+    ]
   },
   "files": [
-    "index.ts",
-    "typings/index.d.ts"
+    "index.ts"
   ],
   "include": [
     "./src/**/*.ts"
   ],
   "exclude": [
-    "node_modules",
-    "node_modules/**/@types"
+    "node_modules"
   ]
 }
