@@ -2,6 +2,8 @@
 declare module "webpack" {
     import {RawSourceMap} from "source-map";
 
+    export const version: string;
+
     export interface Tapable {
         apply(...toApply: Array<{ apply: (tapable: Tapable) => void }>): void;
     }

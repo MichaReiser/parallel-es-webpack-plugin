@@ -123,11 +123,18 @@ function rewriteTest(fileName: string) {
     });
 }
 
+function getMajorWebpackVersion() {
+    const semver = webpack.version;
+    const majorDot = semver.indexOf(".");
+
+    return parseInt(semver.substr(0, majorDot), 10);
+}
+
 function webpackOptions(options: object) {
     "use strict";
     return merge({
         devtool: "#source-map",
-        mode: "development",
+        mode: getMajorWebpackVersion() >= 4 ? "development" : undefined,
         module: {
             rules: [
                 {
