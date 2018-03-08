@@ -93,10 +93,12 @@ declare module "webpack" {
     }
 
     export interface Module {
-        fileDependencies: string[];
         resource: string;
         rawRequest: string;
         request: string;
+        buildInfo: {
+            fileDependencies: Set<string>
+        };
     }
 
     export interface NormalModuleFactory {

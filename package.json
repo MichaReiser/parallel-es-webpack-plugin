@@ -54,13 +54,13 @@
     "ts-node": "^5.0.1",
     "tslint": "^5.9.1",
     "typescript": "^2.7.2",
-    "webpack": "3.x.x"
+    "webpack": "^4.1.0"
   },
   "peerDependencies": {
     "babel-loader": "^6.2.8",
     "babel-plugin-parallel-es": "^0.1.8",
     "parallel-es": "^0.1.17",
-    "webpack": "^2.1.0"
+    "webpack": "^4.0.0"
   },
   "dependencies": {
     "babel-core": "^6.26.0",
