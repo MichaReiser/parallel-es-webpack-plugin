@@ -24,17 +24,17 @@ function readAsset(name: string, compilation: Compilation): string {
     return compilation.assets[name].source();
 }
 
-describe("Plugin", function (this: ITestDefinition) {
+describe("Plugin", function(this: ITestDefinition) {
     this.timeout(20000);
 
-    it("creates one asset for the main entry and one containing the worker slave code", function () {
+    it("creates one asset for the main entry and one containing the worker slave code", function() {
         return rewriteTest("simple-parallel-call-test.js").then((compilation) => {
             expect(compilation.assets).to.have.property("main");
             expect(compilation.assets).to.have.property("worker-slave.parallel.js");
         });
     });
 
-    it("replaces the functors passed to parallel with serialized function ids", function () {
+    it("replaces the functors passed to parallel with serialized function ids", function() {
         return rewriteTest("simple-parallel-call-test.js").then(compilation => {
             const content =  readAsset("main", compilation);
             expect(content).to.include(`__WEBPACK_IMPORTED_MODULE_0_parallel_es___default.a.from([1, 2, 3]).map({
@@ -46,7 +46,7 @@ describe("Plugin", function (this: ITestDefinition) {
         });
     });
 
-    it("registers the functors from the 'main-thread' in the parallel worker file", function () {
+    it("registers the functors from the 'main-thread' in the parallel worker file", function() {
         return rewriteTest("simple-parallel-call-test.js").then(compilation => {
             const content = readAsset("worker-slave.parallel.js", compilation);
             expect(content).to.include(`/*./test.js*/(function () {
@@ -63,7 +63,7 @@ describe("Plugin", function (this: ITestDefinition) {
         });
     });
 
-    it("sets the source content for the file where functions have been extracted in the output source map", function () {
+    it("sets the source content for the file where functions have been extracted in the output source map", function() {
         return rewriteTest("simple-parallel-call-test.js").then(compilation => {
             /* tslint:disable: no-consecutive-blank-lines */
             const map = readSourceMap("worker-slave.parallel.js.map", compilation);
@@ -80,7 +80,7 @@ parallel.from([1, 2, 3]).map(value => value * 2).then(result => console.log(resu
         });
     });
 
-    it("maps the inserted function correctly to it's original position", function () {
+    it("maps the inserted function correctly to it's original position", function() {
         return rewriteTest("simple-parallel-call-test.js").then(compilation => {
             const map = readSourceMap("worker-slave.parallel.js.map", compilation);
             const code = readAsset("worker-slave.parallel.js", compilation);
@@ -110,7 +110,7 @@ function rewriteTest(fileName: string) {
             entry: [ `./test/cases/${fileName}` ]
         });
 
-        compile(options, function (error: any, stats: Stats) {
+        compile(options, function(error: any, stats: Stats) {
             if (error) {
                 reject(error);
             }
@@ -124,7 +124,7 @@ function rewriteTest(fileName: string) {
     });
 }
 
-function webpackOptions(options: Object) {
+function webpackOptions(options: object) {
     "use strict";
     return merge({
         devtool: "#source-map",
@@ -162,9 +162,9 @@ function webpackOptions(options: Object) {
     }, options);
 }
 
-function compile(options: Object, callback: (error: any, stats: Stats, fs: FileSystem) => void) {
+function compile(options: object, callback: (error: any, stats: Stats, fs: FileSystem) => void) {
     const compiler = require("webpack")(options);
     const fs = new (require("memory-fs"))();
     compiler.outputFileSystem = fs;
-    compiler.run(function (error: any, stats: Stats) { callback(error, stats, fs); });
+    compiler.run(function(error: any, stats: Stats) { callback(error, stats, fs); });
 }
