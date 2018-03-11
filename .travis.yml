@@ -3,8 +3,6 @@ node_js:
 - stable
 
 env:
- - WEBPACK="webpack@2"
- - WEBPACK="webpack@3"
  - WEBPACK="webpack@4"
  - WEBPACK="webpack"
 

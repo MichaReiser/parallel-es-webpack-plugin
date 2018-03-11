@@ -39,22 +39,22 @@ class ParallelESPlugin {
     }
 
     public apply(compiler: Compiler) {
-        compiler.plugin("make", (compilation, callback) => {
+        compiler.hooks.make.tapAsync("parallel-es", (compilation, callback) => {
             if (compilation.compiler.isChild()) {
                 return;
             }
 
             this.createChildCompilation(compilation, callback);
 
-            compilation.plugin("succeed-module", module => this.onModuleBuild(module));
-            compilation.plugin("failed-module", module => this.onModuleBuild(module));
+            compilation.hooks.succeedModule.tap("parallel-es", module => this.onModuleBuild(module));
+            compilation.hooks.failedModule.tap("parallel-es", module => this.onModuleBuild(module));
 
             /**
              * An additional pass is needed if a new file is using the parallel api. Otherwise the function of the
              * newly added file are not included in the compilation. Do not trigger a rebuild if this is the first build
              * (in this case the parallel module has never been built, so no rebuild is needed).
              */
-            compilation.plugin("need-additional-pass", () => {
+            compilation.hooks.needAdditionalPass.tap("parallel-es", () => {
                 if (this.initialCompilation) {
                     return false;
                 }
@@ -62,17 +62,18 @@ class ParallelESPlugin {
             });
         });
 
-        compiler.plugin("after-compile", (compilation, callback) => this.onMainAfterCompile(compilation, callback));
-        compiler.plugin("done", () => this.initialCompilation = false);
+        compiler.hooks.afterCompile.tap("parallel-es", (compilation) => this.onMainAfterCompile(compilation));
+        compiler.hooks.done.tap("parallel-es", () => this.initialCompilation = false);
     }
 
     private createChildCompilation(mainCompilation: Compilation, callback: (error?: any) => void) {
         const outputOptions = { filename: "worker-slave.parallel.js" };
         const childCompiler = mainCompilation.createChildCompiler("parallel-es-worker", outputOptions);
         childCompiler.context = mainCompilation.compiler.context;
-        childCompiler.apply(new WebWorkerTemplatePlugin(outputOptions));
-        childCompiler.apply(new SingleEntryPlugin(childCompiler.context, this.getWorkerRequest(), "main"));
-        childCompiler.plugin("compilation", (childCompilation) => this.onChildCompilation(childCompilation));
+
+        new WebWorkerTemplatePlugin(outputOptions).apply(childCompiler);
+        new SingleEntryPlugin(childCompiler.context, this.getWorkerRequest(), "main").apply(childCompiler);
+        childCompiler.hooks.compilation.tap("parallel-es", childCompilation => this.onChildCompilation(childCompilation));
         childCompiler.runAsChild(callback);
     }
 
@@ -119,9 +120,8 @@ class ParallelESPlugin {
     /**
      * Triggered when the main compilation is complete. Sets the file dependencies of the worker module
      * @param compilation the compilation for which the compile is complete
-     * @param callback callback that needs to trigger the continuation of the compilation
      */
-    private onMainAfterCompile(compilation: Compilation, callback: (error?: any) => void): void {
+    private onMainAfterCompile(compilation: Compilation): void {
         // Only update the dependencies if it is the main compiler. Doesn't seem to work if it is the child compilation :(
         if (!compilation.compiler.isChild()) {
             const parallelWorkerRequest = this.getWorkerRequest();
@@ -130,12 +130,9 @@ class ParallelESPlugin {
             if (workerModule) {
                 workerModule.buildInfo.fileDependencies = new Set(Array.from(workerModule.buildInfo.fileDependencies).concat(Array.from(this.workerDependencies.values())));
             } else {
-                callback(new Error(`The worker module could not be found in the child compilation`));
-                return;
+                throw new Error(`The worker module could not be found in the child compilation`);
             }
         }
-
-        callback();
     }
 
     private addWorkerDependency(module: Module) {
