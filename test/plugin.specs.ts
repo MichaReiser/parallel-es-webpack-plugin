@@ -30,7 +30,7 @@ describe("Plugin", function(this: ITestDefinition) {
     it("creates one asset for the main entry and one containing the worker slave code", function() {
         return rewriteTest("simple-parallel-call-test.js").then((compilation) => {
             expect(compilation.assets).to.have.property("main");
-            expect(compilation.assets).to.have.property("worker-slave.parallel.js");
+            expect(compilation.assets).to.have.property("parallel-slave.js");
         });
     });
 
@@ -51,7 +51,7 @@ describe("Plugin", function(this: ITestDefinition) {
 
     it("registers the functors from the 'main-thread' in the parallel worker file", function() {
         return rewriteTest("simple-parallel-call-test.js").then(compilation => {
-            const content = readAsset("worker-slave.parallel.js", compilation);
+            const content = readAsset("parallel-slave.js", compilation);
             expect(content).to.have.string(`/*./test.js*/(function () {
     function _anonymous(value) {
       return value * 2;
@@ -69,7 +69,7 @@ describe("Plugin", function(this: ITestDefinition) {
     it("sets the source content for the file where functions have been extracted in the output source map", function() {
         return rewriteTest("simple-parallel-call-test.js").then(compilation => {
             /* tslint:disable: no-consecutive-blank-lines */
-            const map = readSourceMap("worker-slave.parallel.js.map", compilation);
+            const map = readSourceMap("parallel-slave.js.map", compilation);
 
             const consumer = new SourceMapConsumer(map);
             expect(consumer.sourceContentFor("webpack:///test/cases/simple-parallel-call-test.js")).to.equal(`import parallel from "parallel-es";
@@ -81,8 +81,8 @@ parallel.from([1, 2, 3]).map(value => value * 2).then(result => console.log(resu
 
     it("maps the inserted function correctly to it's original position", function() {
         return rewriteTest("simple-parallel-call-test.js").then(compilation => {
-            const map = readSourceMap("worker-slave.parallel.js.map", compilation);
-            const code = readAsset("worker-slave.parallel.js", compilation);
+            const map = readSourceMap("parallel-slave.js.map", compilation);
+            const code = readAsset("parallel-slave.js", compilation);
             const codeLines = code.split("\n");
 
             for (let line = 0; line < codeLines.length; ++line) {
@@ -131,7 +131,7 @@ function webpackOptions(options: object) {
         module: {
             rules: [
                 {
-                    exclude: /(node_modules|bower_components|worker-slave.parallel-es6\.js)/,
+                    exclude: /(node_modules|bower_components|slave\.js)/,
                     loader: "babel-loader",
                     options: {
                         filenameRelative: "./test.js",

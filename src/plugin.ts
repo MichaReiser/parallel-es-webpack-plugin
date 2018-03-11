@@ -29,7 +29,7 @@ class ParallelESPlugin {
 
     constructor(options?: IPluginOptions) {
         options = options || {};
-        options.workerSlaveFileName = options.workerSlaveFileName || "parallel-es/dist/worker-slave.parallel-es6.js";
+        options.workerSlaveFileName = options.workerSlaveFileName || "parallel-es/dist/browser/slave.js";
         options.babelOptions = options.babelOptions || {};
         options.babelOptions.babelrc = false;
         options.babelOptions.plugins = options.babelOptions.plugins || [];
@@ -67,7 +67,7 @@ class ParallelESPlugin {
     }
 
     private createChildCompilation(mainCompilation: Compilation, callback: (error?: any) => void) {
-        const outputOptions = { filename: "worker-slave.parallel.js" };
+        const outputOptions = { filename: "parallel-slave.js" };
         const childCompiler = mainCompilation.createChildCompiler("parallel-es-worker", outputOptions);
         childCompiler.context = mainCompilation.compiler.context;
 
@@ -103,7 +103,7 @@ class ParallelESPlugin {
     }
 
     /**
-     * Triggered whenver a module from the main compilation has been built.
+     * Triggered whenever a module from the main compilation has been built.
      * If the module is using the parallel api, add id to the list of dependencies (the worker therefore depends upon this module)
      * @param module the module that has been successfully build
      */

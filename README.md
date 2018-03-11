@@ -46,33 +46,6 @@ module.exports = {
 
 Of course, you can also add the babel-plugin in your `.babelrc`
 
-## Use ES5 Version of Parallel.ES
-The Plugin uses by default the ES6 Version of Parallel.ES. If you want to use the ES5 version instead, you can define the file to use in the plugin constructor:
-
-```js
-…
-plugins: [
-	new ParallelEsPlugin({
-		workerSlaveFileName: "parallel-es/dist/worker-slave.parallel-es.js" 
-	})  
-]
-…
-```
-
-## Transpile Source Code
-You can normally transpile your source code using babel (in combination with the babel loader). However, the code of the parallel-es plugin is not transpiled by default. The babel options for the parallel-es plugin can be configured by passing them in the plugin constructor:
-
-```js
-…
-new ParallelEsPlugin({
-	babelOptions: {
-		"presets": [
-			["es2015", { "modules": false }]
-		]
-	}
-})
-…
-```
 
 ## Sample Configuration / Project
 The [Parallel-ES-Rewriter-Example](https://github.com/DatenMetzgerX/parallel-es-rewriter-example) is a small project that is using the parallel-es-webpack-plugin to rewrite the code.
