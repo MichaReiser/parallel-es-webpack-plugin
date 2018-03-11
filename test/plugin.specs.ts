@@ -53,15 +53,15 @@ describe("Plugin", function(this: ITestDefinition) {
         return rewriteTest("simple-parallel-call-test.js").then(compilation => {
             const content = readAsset("worker-slave.parallel.js", compilation);
             expect(content).to.have.string(`/*./test.js*/(function () {
-        function _anonymous(value) {
-            return value * 2;
-        }
+    function _anonymous(value) {
+      return value * 2;
+    }
 
-        slaveFunctionLookupTable.registerStaticFunction({
-            identifier: 'static:./test.js/_anonymous',
-            _______isFunctionId: true
-        }, _anonymous);
-    })();`);
+    slaveFunctionLookupTable.registerStaticFunction({
+      identifier: 'static:./test.js/_anonymous',
+      _______isFunctionId: true
+    }, _anonymous);
+  })();`);
 
         });
     });
