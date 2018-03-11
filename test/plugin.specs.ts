@@ -30,35 +30,38 @@ describe("Plugin", function(this: ITestDefinition) {
     it("creates one asset for the main entry and one containing the worker slave code", function() {
         return rewriteTest("simple-parallel-call-test.js").then((compilation) => {
             expect(compilation.assets).to.have.property("main");
-            expect(compilation.assets).to.have.property("worker-slave.parallel.js");
+            expect(compilation.assets).to.have.property("parallel-slave.js");
         });
     });
 
     it("replaces the functors passed to parallel with serialized function ids", function() {
         return rewriteTest("simple-parallel-call-test.js").then(compilation => {
-            const content =  readAsset("main", compilation);
-            expect(content).to.include(`__WEBPACK_IMPORTED_MODULE_0_parallel_es___default.a.from([1, 2, 3]).map({
+            const content = readAsset("main", compilation);
+            expect(content).to.have.string(
+`parallel_es__WEBPACK_IMPORTED_MODULE_0___default.a.from([1, 2, 3]).map({
   identifier: 'static:./test.js/_anonymous',
   _______isFunctionId: true
 }).then(function (result) {
   return console.log(result);
-});`);
+});
+
+/***/ })`);
         });
     });
 
     it("registers the functors from the 'main-thread' in the parallel worker file", function() {
         return rewriteTest("simple-parallel-call-test.js").then(compilation => {
-            const content = readAsset("worker-slave.parallel.js", compilation);
-            expect(content).to.include(`/*./test.js*/(function () {
-        function _anonymous(value) {
-            return value * 2;
-        }
+            const content = readAsset("parallel-slave.js", compilation);
+            expect(content).to.have.string(`/*./test.js*/(function () {
+    function _anonymous(value) {
+      return value * 2;
+    }
 
-        slaveFunctionLookupTable.registerStaticFunction({
-            identifier: 'static:./test.js/_anonymous',
-            _______isFunctionId: true
-        }, _anonymous);
-    })();`);
+    slaveFunctionLookupTable.registerStaticFunction({
+      identifier: 'static:./test.js/_anonymous',
+      _______isFunctionId: true
+    }, _anonymous);
+  })();`);
 
         });
     });
@@ -66,24 +69,20 @@ describe("Plugin", function(this: ITestDefinition) {
     it("sets the source content for the file where functions have been extracted in the output source map", function() {
         return rewriteTest("simple-parallel-call-test.js").then(compilation => {
             /* tslint:disable: no-consecutive-blank-lines */
-            const map = readSourceMap("worker-slave.parallel.js.map", compilation);
+            const map = readSourceMap("parallel-slave.js.map", compilation);
 
             const consumer = new SourceMapConsumer(map);
             expect(consumer.sourceContentFor("webpack:///test/cases/simple-parallel-call-test.js")).to.equal(`import parallel from "parallel-es";
 
 parallel.from([1, 2, 3]).map(value => value * 2).then(result => console.log(result));
-
-
-
-// WEBPACK FOOTER //
-// ./test/cases/simple-parallel-call-test.js`);
+`);
         });
     });
 
     it("maps the inserted function correctly to it's original position", function() {
         return rewriteTest("simple-parallel-call-test.js").then(compilation => {
-            const map = readSourceMap("worker-slave.parallel.js.map", compilation);
-            const code = readAsset("worker-slave.parallel.js", compilation);
+            const map = readSourceMap("parallel-slave.js.map", compilation);
+            const code = readAsset("parallel-slave.js", compilation);
             const codeLines = code.split("\n");
 
             for (let line = 0; line < codeLines.length; ++line) {
@@ -128,12 +127,13 @@ function webpackOptions(options: object) {
     "use strict";
     return merge({
         devtool: "#source-map",
+        mode: "development",
         module: {
-            loaders: [
+            rules: [
                 {
-                    exclude: /(node_modules|bower_components|worker-slave.parallel-es6\.js)/,
+                    exclude: /(node_modules|bower_components|slave\.js)/,
                     loader: "babel-loader",
-                    query: {
+                    options: {
                         filenameRelative: "./test.js",
                         generatorOpts: {
                             quotes: "single"

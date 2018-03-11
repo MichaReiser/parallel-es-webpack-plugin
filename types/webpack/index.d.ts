@@ -1,6 +1,9 @@
 // tslint:disable:interface-name no-empty-interface max-classes-per-file
+
 declare module "webpack" {
     import {RawSourceMap} from "source-map";
+
+    export const version: string;
 
     export interface Tapable {
         apply(...toApply: Array<{ apply: (tapable: Tapable) => void }>): void;
@@ -22,44 +25,29 @@ declare module "webpack" {
         constructor(options: { debug?: boolean });
     }
 
+    export type CallbackFunction = (error?: Error, result?: any, ...args: any[]) => void;
+
+    export interface Hook {
+        tap(pluginName: string, handler: () => any): void;
+        tapAsync(pluginName: string, handler: (callback: CallbackFunction) => void): void;
+    }
+
+    export interface HookWithArg<T> {
+        tap(pluginName: string, handler: (o: T) => any): void;
+        tapAsync(pluginName: string, handler: (o: T, callback: CallbackFunction) => void): void;
+    }
+
     export interface Compiler extends Tapable {
         context: string;
         inputFileSystem: FileSystem;
         outputFileSystem: FileSystem;
 
-        /**
-         * A Compilation is created. A plugin can use this to obtain a reference to the Compilation object. The params object contains useful references.
-         */
-        plugin(name: "compilation", callback: (c: Compilation, params: any) => void): void;
-
-        plugin(name: "compile", callback: (params: any) => void): void;
-
-        /**
-         * A NormalModuleFactory is created. A plugin can use this to obtain a reference to the NormalModuleFactory object.
-         */
-        plugin(name: "normal-module-factory", callback: (factory: NormalModuleFactory) => void): void;
-
-        /**
-         * A ContextModuleFactory is created. A plugin can use this to obtain a reference to the ContextModuleFactory object.
-         */
-        plugin(name: "context-module-factory", callback: (factory: ContextModuleFactory) => void): void;
-
-        /**
-         * The Compiler starts compiling. This is used in normal and watch mode. Plugins can use this point to modify the params object (i. e. to decorate the factories).
-         */
-        plugin(name: "compile", callback: (params: any) => void): void;
-
-        /**
-         * Plugins can use this point to add entries to the compilation or prefetch modules. They can do this by calling addEntry(context, entry, name, callback) or prefetch(context, dependency, callback) on the Compilatio
-         */
-        plugin(name: "make", callback: (c: Compilation, callback: (error: any) => void) => void): void;
-
-        plugin(name: "after-compile", callback: (this: void, c: Compilation, callback: (error: any) => void) => void): void;
-
-        plugin(name: "emit", callback: (c: Compilation, callback: (error: any) => void) => void): void;
-
-        plugin(name: "done", callback: (this: void) => void): void;
-
+        hooks: {
+            make: HookWithArg<Compilation>;
+            afterCompile: HookWithArg<Compilation>;
+            compilation: HookWithArg<Compilation>;
+            done: Hook;
+        };
         isChild(): boolean;
 
         runAsChild(callback: (error: any, entries: any[], compilation: Compilation) => void): void;
@@ -80,23 +68,24 @@ declare module "webpack" {
         errors: Error[];
         assets: { [name: string]: Asset };
         modules: Module[];
+        hooks: {
+            succeedModule: HookWithArg<Module>;
+            failedModule: HookWithArg<Module>;
+            needAdditionalPass: Hook;
+        };
 
-        addEntry(context: any, entry: any, name: string, callback: Function): void;
+        addEntry(context: any, entry: any, name: string, callback: CallbackFunction): void;
 
         createChildCompiler(name: string, outputOptions: WebpackOptions): Compiler;
-
-        plugin(event: "succeed-module", callback: (this: void, module: Module) => void): void;
-
-        plugin(event: "failed-module", callback: (this: void, module: Module) => void): void;
-
-        plugin(evnet: "need-additional-pass", callback: (this: void) => boolean): void;
     }
 
     export interface Module {
-        fileDependencies: string[];
         resource: string;
         rawRequest: string;
         request: string;
+        buildInfo: {
+            fileDependencies: Set<string>
+        };
     }
 
     export interface NormalModuleFactory {

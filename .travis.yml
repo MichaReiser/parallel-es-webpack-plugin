@@ -3,8 +3,8 @@ node_js:
 - stable
 
 env:
- - WEBPACK="webpack@2"
- - WEBPACK="webpack@3"
+ - WEBPACK="webpack@4"
+ - WEBPACK="webpack"
 
 before_install:
 - sudo apt-key adv --fetch-keys http://dl.yarnpkg.com/debian/pubkey.gpg
